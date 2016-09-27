@@ -3,8 +3,17 @@ from bs4 import BeautifulSoup
 from urllib2 import urlopen
 import requests
 import logging
-logging.getLogger().setLevel(logging.DEBUG)
+import re
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s")
+rootLogger = logging.getLogger()
+rootLogger.setLevel(logging.INFO)
+
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(logFormatter)
+rootLogger.addHandler(consoleHandler)
 import datetime
+
+
 class doubanMovieComments(object):
 	def __init__(self, userName, passWord, captcha_solution='', captcha_id=''):
 		self.user = userName
@@ -54,7 +63,7 @@ class doubanMovieComments(object):
 		comments = []
 		if verify == True:
 			vURL = 'https://movie.douban.com/subject/%s/comments?sort=new_score'%movieId
-			vsoup = BeautifulSoup(self.login_session.get(vURL),'lxml')
+			vsoup = BeautifulSoup(self.login_session.get(vURL).text,'lxml')
 			vcontentdiv = vsoup.find("div", {"id": "content"})
 			tag = vcontentdiv.find("span",{"class":"fleft"})
 			self.total = int(tag.contents[0].split(u'\u5171')[1].split(u'\u6761')[0])
@@ -65,18 +74,39 @@ class doubanMovieComments(object):
 				raise Exception("not enough comments")
 		
 		URL = 'https://movie.douban.com/subject/%s/comments?start=%d&limit=20&sort=new_score'%(movieId,start)
-		soup = BeautifulSoup(self.login_session.get(URL),'lxml')
-		contentdiv = soup.find("div", {"id": "content"})	
+		soup = BeautifulSoup(self.login_session.get(URL).text,'lxml')
+		contentdiv = soup.find("div", {"id": "content"})
 		commentsdiv = contentdiv.findAll("div",{"class":"comment-item"})
-		
+
+		logging.warning("find %d comments sesection."%len(commentsdiv))
 		for item in commentsdiv:
-			comments.append(parseComments(self,item))
+			comment_data = self.parseComments(item)
+			if comment_data == 'no rating found':
+				continue
+			else:
+				comments.append(comment_data)
+		logging.warning("load %d valid comments in this round."%len(comments))
+		return comments
 
 	def parseComments(self,html):
 		cid = html.attrs['data-cid']
-		vote = int(
-			html.find("span",{"class":"comment-vote"}).contents[1].contents[0]
-			)
-		
+		info = html.find("span",{"class":"comment-info"})
+		rating_allstar = info.findChild("span")['class'][0]
+		if "allstar" not in rating_allstar:
+			return 'no rating found'
+		else:
+			rating = int(re.sub("[^0-9]", "", rating_allstar))
+			vote = int(
+				html.find("span",{"class":"comment-vote"}).contents[1].contents[0]
+				)
+			comment_text = html.find("p").contents[0]\
+							.replace(' ','').replace('\n','')
+			date = info.findChild("span",{"class":""}).contents[0]\
+					.replace(' ','').replace('\n','')
+
+			return {"cid":cid,"date":date,"rating":rating,"vote":vote,"comment":comment_text}
+
+
+
 
 
