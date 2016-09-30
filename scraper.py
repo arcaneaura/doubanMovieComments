@@ -74,7 +74,18 @@ class doubanMovieComments(object):
 				raise Exception("not enough comments")
 		
 		URL = 'https://movie.douban.com/subject/%s/comments?start=%d&limit=20&sort=new_score'%(movieId,start)
-		soup = BeautifulSoup(self.login_session.get(URL).text,'lxml')
+		try:
+			page = self.login_session.get(URL, timeout=10)
+		except requests.exceptions.ConnectionError:
+			logging.warning("requests.exceptions.ConnectionError")
+			return "page load error."
+		except requests.exceptions.ConnectTimeout:
+			logging.warning("ConnectTimeout")
+			return "ConnectTimeout"
+		except requests.exceptions.ReadTimeout:
+			logging.warning("ReadTimeout")
+			return "ConnectTimeout"
+		soup = BeautifulSoup(page.text,'lxml')
 		contentdiv = soup.find("div", {"id": "content"})
 		commentsdiv = contentdiv.findAll("div",{"class":"comment-item"})
 

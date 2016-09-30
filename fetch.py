@@ -2,26 +2,41 @@
 import os
 os.chdir('/home/excited/Projects/doubanFetch/doubanMovieComments/')
 print os.getcwd()
+import datetime
+import sys
 from scraper import doubanMovieComments
 import pymongo
 import time
 import json
+import logging
+
 client = pymongo.MongoClient('localhost', 27017)
 db = client['doubancomments']
+print datetime.datetime.now()
+mid = sys.argv[1]
+mname = sys.argv[2]
 
+session = doubanMovieComments('huangzhiqi04@163.com','qiqi2014521','sense','LWxBirU5cXwWxMPbi5JM0FCR:en')
+total_valid = 0
+data_error = 0
+duplicate_cid = 0
 
-
-session = doubanMovieComments('huangzhiqi04@163.com','qiqi2014521','still','QfrE78hZmRrH64mVLoCpEXIV:en')
-
-for i in range(1001,2000,20):
+for i in range(1,5000,20):
     index = i if i != 1 else 0
-    comments = session.loadComments('25986180',start=index)
-    if len(comments) != 0:
+    logging.info("scanning %d to %d comments."%(index,index+20))
+    comments = session.loadComments('%s'%mid,start=index)
+    if len(comments) != 0 and comments != "page load error." and comments != "ConnectTimeout":
+        total_valid += len(comments)
         for j in comments:
-            if db.busanhaeng.find({"cid":"%s"%j['cid']}).count() == 1:
-                continue
+            if db['%s'%mname].find({"cid":"%s"%j['cid']}).count() == 1:
+                duplicate_cid += 1
             else:
-                result = db.busanhaeng.insert_one(j)
+                result = db['%s'%mname].insert_one(j)
+    else:
+        data_error += 20
+    logging.info("valid records %d"%total_valid)
+    logging.info("exsisted records %d"%duplicate_cid)
+    logging.info("page error failed %d records"%data_error)
     time.sleep(20)
-
 session.logout()
+print {"total_valid":total_valid,"exsisted":duplicate_cid,"data_error":data_error}
