@@ -92,7 +92,7 @@ class doubanMovieComments(object):
 		logging.warning("find %d comments sesection."%len(commentsdiv))
 		for item in commentsdiv:
 			comment_data = self.parseComments(item)
-			if comment_data == 'no rating found':
+			if comment_data == 'no rating found' or comment_data == 'viwer has not seen the move.':
 				continue
 			else:
 				comments.append(comment_data)
