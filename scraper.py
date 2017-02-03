@@ -34,7 +34,7 @@ class doubanMovieComments(object):
 		              'form_password':self.pw,
 		              'captcha-solution': self.captcha_solution,
 		              'captcha-id': self.captcha_id,
-		              'remember':True}
+		              'remember':'on'}
 		postRequest = s.post('https://accounts.douban.com/login',
 			              data = login_data)
 		landingPage = BeautifulSoup(postRequest.text,'lxml')
@@ -102,7 +102,11 @@ class doubanMovieComments(object):
 	def parseComments(self,html):
 		cid = html.attrs['data-cid']
 		info = html.find("span",{"class":"comment-info"})
-		rating_allstar = info.findChild("span")['class'][0]
+		rating = info.findChildren("span")
+		if rating[0].text != u'看过':
+			return 'viwer has not seen the move.'
+		else:
+			rating_allstar = rating[1]['class'][0]
 		if "allstar" not in rating_allstar:
 			return 'no rating found'
 		else:
