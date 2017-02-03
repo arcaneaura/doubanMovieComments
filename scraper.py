@@ -30,11 +30,17 @@ class doubanMovieComments(object):
 
 	def auth(self):
 		s = requests.session()
-		login_data = {'form_email':self.user, 
-		              'form_password':self.pw,
-		              'captcha-solution': self.captcha_solution,
-		              'captcha-id': self.captcha_id,
-		              'remember':'on'}
+		if self.captcha_solution == '':
+			login_data = {'form_email':self.user, 
+		              	      'form_password':self.pw,
+		                      'remember':'on'}
+		else:
+			login_data = {'form_email':self.user, 
+				      'form_password':self.pw,
+				      'captcha-solution': self.captcha_solution,
+                                      'captcha-id': self.captcha_id,
+                                      'remember':'on'}
+
 		postRequest = s.post('https://accounts.douban.com/login',
 			              data = login_data)
 		landingPage = BeautifulSoup(postRequest.text,'lxml')
