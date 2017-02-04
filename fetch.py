@@ -16,7 +16,7 @@ print datetime.datetime.now()
 mid = sys.argv[1]
 mname = sys.argv[2]
 
-session = doubanMovieComments('huangzhiqi04@163.com','qiqi2014521','','')
+session = doubanMovieComments('$username','$password','','')
 total_valid = 0
 data_error = 0
 duplicate_cid = 0
