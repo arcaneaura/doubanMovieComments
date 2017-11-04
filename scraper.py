@@ -116,14 +116,23 @@ class doubanMovieComments(object):
 		if "allstar" not in rating_allstar:
 			return 'no rating found'
 		else:
-			rating = int(re.sub("[^0-9]", "", rating_allstar))
-			vote = int(
-				html.find("span",{"class":"comment-vote"}).contents[1].contents[0]
-				)
-			comment_text = html.find("p").contents[0]\
-							.replace(' ','').replace('\n','')
-			date = info.findChild("span",{"class":"comment-time"}).attr['title']
-
+			try:
+				rating = int(re.sub("[^0-9]", "", rating_allstar))
+			except:
+				rating = -1
+			try:
+				vote = int(html.find("span",{"class":"comment-vote"}).contents[1].contents[0])
+			except:
+				vote = -1
+			try:
+				comment_text = html.find("p").contents[0].replace(' ','').replace('\n','')
+			except:
+				comment_text = ''
+			try:	
+				date = info.findChild("span",{"class":"comment-time"}).attr['title']
+			except:
+				date = ''
+				
 			return {"cid":cid,"date":date,"rating":rating,"vote":vote,"comment":comment_text}
 
 
