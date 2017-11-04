@@ -79,7 +79,7 @@ class doubanMovieComments(object):
 			if start > self.total - 20:
 				raise Exception("not enough comments")
 		
-		URL = 'https://movie.douban.com/subject/%s/comments?start=%d&limit=20&sort=new_score'%(movieId,start)
+		URL = 'https://movie.douban.com/subject/%s/comments??status=P?start=%d&limit=20&sort=new_score'%(movieId,start)
 		try:
 			page = self.login_session.get(URL, timeout=10)
 		except requests.exceptions.ConnectionError:
@@ -122,8 +122,7 @@ class doubanMovieComments(object):
 				)
 			comment_text = html.find("p").contents[0]\
 							.replace(' ','').replace('\n','')
-			date = info.findChild("span",{"class":""}).contents[0]\
-					.replace(' ','').replace('\n','')
+			date = info.findChild("span",{"class":"comment-time"}).attr['title']
 
 			return {"cid":cid,"date":date,"rating":rating,"vote":vote,"comment":comment_text}
 

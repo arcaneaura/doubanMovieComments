@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-os.chdir('/home/excited/projects/doubanMovieComments/')
+os.chdir('/home/excited/tools/doubanMovieComments/')
 print os.getcwd()
 import datetime
 import sys
@@ -10,18 +10,18 @@ import time
 import json
 import logging
 
-client = pymongo.MongoClient('localhost', 27017)
+client = pymongo.MongoClient('localhost', 2717)
 db = client['doubancomments']
 print datetime.datetime.now()
 mid = sys.argv[1]
 mname = sys.argv[2]
 
-session = doubanMovieComments('$username','$password','','')
+session = doubanMovieComments('huangzhiqi04@163.com','qiqi19900701','','')
 total_valid = 0
 data_error = 0
 duplicate_cid = 0
 
-for i in range(1,5000,20):
+for i in range(1,47000,20):
     index = i if i != 1 else 0
     logging.info("scanning %d to %d comments."%(index,index+20))
     comments = session.loadComments('%s'%mid,start=index)
